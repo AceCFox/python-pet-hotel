@@ -45,7 +45,7 @@ def getpets():
     # (1, 100, "abc'def")
     return "data from pets table is {}".format(result)
 
-@app.route('/user', methods = ['GET'])
+@app.route('/owner', methods = ['GET'])
 def getUser():
     cur.execute("SELECT * FROM owner;")
     result = cur.fetchall()

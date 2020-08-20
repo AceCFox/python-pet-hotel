@@ -75,6 +75,28 @@ def addowner():
     currentdbstate = refreshdata()
     return "pet is now {}".format(currentdbstate)
 
+
+@app.route('/pet/checkin/<id>', methods=['PUT'])
+def checkIn(id):
+    cur.execute('UPDATE pet SET "checked-in" = CURRENT_TIMESTAMP WHERE "ID" = %s;',
+                (id,))
+    print("in /pet POST, pet name is :", id)
+    #beatles.append(beatle)
+
+    def refreshdata():
+        cur.execute("SELECT * FROM pet;")
+        result = cur.fetchall()
+        # (1, 100, "abc'def")
+        return result
+    currentdbstate = refreshdata()
+    return "pet is now {}".format(currentdbstate)
+
+# UPDATE table_name
+# SET column1 = value1, column2 = value2, ...
+# WHERE condition; 
+
+
+
 # @app.route('/pet/<id>', methods=['DELETE'])
 # def deletepet(id):
 #     index = id

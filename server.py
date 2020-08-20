@@ -5,7 +5,6 @@ from flask import request, jsonify, render_template
 import psycopg2
 
 
-
 # Create and configure the app
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
@@ -54,25 +53,15 @@ def getpets():
 def getUser():
     cur.execute("SELECT * FROM owner;")
     result = cur.fetchall()
-#    for row in result:
-#        print("Id = ", row[0] )
     return "data from owner table is {}".format(result)
 
 @app.route('/owner/<ownerName>', methods = ['POST'])
-def addOwner( ownerName ):
-    
+def addOwner( ownerName ):  
     query = 'INSERT INTO owner (name) VALUES (%s)'
     name = str(ownerName)
     print (name)
     cur.execute(query, (name,))
-#     result = cur.fetchall()
-
     return "ok"
-
-# Pass data to fill a query placeholders and let Psycopg perform
-# # the correct conversion (no more SQL injections!)
-# >>> cur.execute("INSERT INTO test (num, data) VALUES (%s)", ("bla"))
-
 
 app.run()
 

@@ -28,7 +28,10 @@ try:
 except OSError:
     pass
 
+
+# this is the line where wer update our user data user = 
 conn = psycopg2.connect("dbname=pet_hotel user=acefox" )
+conn.autocommit = True
 
 cur = conn.cursor()
 
@@ -45,20 +48,31 @@ def getpets():
     # (1, 100, "abc'def")
     return "data from pets table is {}".format(result)
 
+
+## OWNER
 @app.route('/owner', methods = ['GET'])
 def getUser():
     cur.execute("SELECT * FROM owner;")
     result = cur.fetchall()
 #    for row in result:
 #        print("Id = ", row[0] )
+    return "data from owner table is {}".format(result)
 
-    return "data from pets table is {}".format(result)
+@app.route('/owner/<ownerName>', methods = ['POST'])
+def addOwner( ownerName ):
+    
+    query = 'INSERT INTO owner (name) VALUES (%s)'
+    name = str(ownerName)
+    print (name)
+    cur.execute(query, (name,))
+#     result = cur.fetchall()
 
+    return "ok"
 
+# Pass data to fill a query placeholders and let Psycopg perform
+# # the correct conversion (no more SQL injections!)
+# >>> cur.execute("INSERT INTO test (num, data) VALUES (%s)", ("bla"))
 
-
-# cur.close()
-# conn.close()
 
 app.run()
 

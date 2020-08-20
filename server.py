@@ -28,8 +28,8 @@ try:
 except OSError:
     pass
 
-conn = psycopg2.connect("dbname=pet_hotel user=acefox" )
-
+conn = psycopg2.connect("dbname=pet_hotel user=postgres password=5236987410" )
+conn.autocommit = True
 cur = conn.cursor()
 
 @app.route('/')
@@ -54,8 +54,33 @@ def getUser():
 
     return "data from pets table is {}".format(result)
 
+@app.route('/pet', methods=['POST'])
+def addowner():
+    petName = request.form.get('name')
+    ownerId = request.form.get('owner_id')
+    petBreed = request.form.get('breed')
+    petColor = request.form.get('color')
 
+    cur.execute("INSERT INTO pet (name, owner_id, breed, color) VALUES (%s, %s, %s, %s);",
+                (str(petName),str(ownerId),str(petBreed),str(petColor)))
+    print("in /pet POST, pet name is :", petName)
+    #beatles.append(beatle)
 
+    def refreshdata():
+        cur.execute("SELECT * FROM pet;")
+        result = cur.fetchall()
+        # (1, 100, "abc'def")
+        return result
+    currentdbstate = refreshdata()
+    return "pet is now {}".format(currentdbstate)
+
+# CREATE TABLE "pet" ("ID" SERIAL PRIMARY KEY, 
+# "name" VARCHAR(100), 
+# "owner_id" INT REFERENCES "owner",
+# "breed" VARCHAR(100),
+# "color" VARCHAR(100), 
+# "checked-in" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+# "checked-out" TIMESTAMP );
 
 # cur.close()
 # conn.close()

@@ -5,7 +5,6 @@ from flask import request, jsonify, render_template
 import psycopg2
 
 
-
 # Create and configure the app
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_mapping(
@@ -28,7 +27,10 @@ try:
 except OSError:
     pass
 
+
+# this is the line where wer update our user data user = 
 conn = psycopg2.connect("dbname=pet_hotel user=acefox" )
+conn.autocommit = True
 
 cur = conn.cursor()
 
@@ -45,20 +47,21 @@ def getpets():
     # (1, 100, "abc'def")
     return "data from pets table is {}".format(result)
 
+
+## OWNER
 @app.route('/owner', methods = ['GET'])
 def getUser():
     cur.execute("SELECT * FROM owner;")
     result = cur.fetchall()
-#    for row in result:
-#        print("Id = ", row[0] )
+    return "data from owner table is {}".format(result)
 
-    return "data from pets table is {}".format(result)
-
-
-
-
-# cur.close()
-# conn.close()
+@app.route('/owner/<ownerName>', methods = ['POST'])
+def addOwner( ownerName ):  
+    query = 'INSERT INTO owner (name) VALUES (%s)'
+    name = str(ownerName)
+    print (name)
+    cur.execute(query, (name,))
+    return "ok"
 
 app.run()
 

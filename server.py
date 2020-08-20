@@ -28,7 +28,7 @@ except OSError:
 
 
 # this is the line where wer update our user data user = 
-conn = psycopg2.connect("dbname=pet_hotel user=postgres password=5236987410" )
+conn = psycopg2.connect("dbname=pet_hotel user='acefox' ")
 conn.autocommit = True
 cur = conn.cursor()
 
@@ -118,6 +118,14 @@ def addOwner( ownerName ):
 @app.route('/owner/<id>', methods = ['DELETE'])
 def deleteOwner( id ):
     query = 'DELETE FROM owner WHERE "ID" = (%s)'
+    id = int(id)
+    print (id)
+    cur.execute(query, (id,))
+    return 'ok'
+
+@app.route('/pet/checkout/<id>', methods = ['PUT'])
+def checkout ( id ):
+    query = 'UPDATE pet SET "checked-in" = null WHERE "ID" = (%s)'
     id = int(id)
     print (id)
     cur.execute(query, (id,))

@@ -10,3 +10,5 @@ CREATE TABLE "pet" ("ID" SERIAL PRIMARY KEY,
 "color" VARCHAR(100), 
 "checked-in" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
 "checked-out" TIMESTAMP );
+
+INSERT INTO "owner" ("name") VALUES ('Ace');

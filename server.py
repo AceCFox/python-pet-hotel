@@ -28,7 +28,7 @@ try:
 except OSError:
     pass
 
-conn = psycopg2.connect("dbname=pet_hotel user=postgres password=5236987410")
+conn = psycopg2.connect("dbname=pet_hotel user=acefox" )
 
 cur = conn.cursor()
 
@@ -42,7 +42,16 @@ def getpets():
     print("in getpets")
     cur.execute("SELECT * FROM pet;")
     result = cur.fetchall()
-    (1, 100, "abc'def")
+    # (1, 100, "abc'def")
+    return "data from pets table is {}".format(result)
+
+@app.route('/user', methods = ['GET'])
+def getUser():
+    cur.execute("SELECT * FROM owner;")
+    result = cur.fetchall()
+#    for row in result:
+#        print("Id = ", row[0] )
+
     return "data from pets table is {}".format(result)
 
 

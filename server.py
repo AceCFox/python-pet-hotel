@@ -94,6 +94,15 @@ def addOwner( ownerName ):
     cur.execute(query, (name,))
     return "ok"
 
+@app.route('/owner/<id>', methods = ['DELETE'])
+def deleteOwner( id ):
+    query = 'DELETE FROM owner WHERE "ID" = (%s)'
+    id = int(id)
+    print (id)
+    cur.execute(query, (id,))
+    return 'ok'
 
 app.run()
+
+
 

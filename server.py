@@ -3,6 +3,8 @@ import sys
 from flask import Flask
 from flask import request, jsonify, render_template, json
 import psycopg2
+import json
+from psycopg2.extras import RealDictCursor
 
 
 # Create and configure the app
@@ -40,30 +42,43 @@ def index():
 
 @app.route('/api/pet', methods=['GET'])
 def getpets():
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     print("in pet get")
-    cur.execute("SELECT * FROM pet;")
+    cur.execute("""
+    SELECT 
+    "pet"."ID" as "id",
+    "pet"."name" as "pets_name" ,
+    "owner"."name" as "owners_name",
+    "breed",
+    "color",
+    "checked-in"
+    FROM "pet"
+    JOIN "owner" 
+    on "owner"."ID" = "pet"."owner_id";""")
     result = cur.fetchall()
-    # (1, 100, "abc'def")
-    # x = Flask.json.dumps(result)
-    # return x
-    for row in result:
-        (petID: row[0], petName: row[1], ownerId: row[2],...)
-        print("petName: ", row[1])
-        print("ownerID: ", row[2])
-        print("petBreed: ", row[3])
-        print("petColor: ", row[4])
-        print("checkIn: ", row[5])
-    return 'ok'
+    cur.close()
+    # indent just makes it look pretty
+    return json.dumps(result, indent =2)
+   
+
 
 ## OWNER
 @app.route('/api/owner', methods = ['GET'])
 def getUser():
-    cur.execute("SELECT * FROM owner;")
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+     SELECT owner.name, owner."ID" as "id", COUNT(pet.name) as pet_count 
+     FROM owner JOIN "pet"
+     ON "owner"."ID" = "pet"."owner_id" 
+     GROUP BY owner."ID";""")
     result = cur.fetchall()
-    return "data from owner table is {}".format(result)
+    cur.close()
+    return json.dumps(result, indent =2)
+# SELECT COUNT(column_name)
+# FROM table_name
+# WHERE condition; 
 
-
-@app.route('/api/pet', methods=['POST'])
+@app.route('/api/pet/', methods=['POST'])
 def addowner():
     petName = request.form.get('name')
     ownerId = request.form.get('owner_id')
@@ -72,7 +87,7 @@ def addowner():
 
     cur.execute("INSERT INTO pet (name, owner_id, breed, color) VALUES (%s, %s, %s, %s);",
                 (str(petName),str(ownerId),str(petBreed),str(petColor)))
-    print("in /pet POST, pet name is :", petName)
+    print("in /pet POST, req.body is :", req.body)
     #beatles.append(beatle)
 
     def refreshdata():

@@ -1,7 +1,7 @@
 import os
 import sys
 from flask import Flask
-from flask import request, jsonify, render_template
+from flask import request, jsonify, render_template, json
 import psycopg2
 
 
@@ -38,24 +38,32 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/pet', methods=['GET'])
+@app.route('/api/pet', methods=['GET'])
 def getpets():
     print("in pet get")
     cur.execute("SELECT * FROM pet;")
     result = cur.fetchall()
     # (1, 100, "abc'def")
-    return "data from pet table is {}".format(result)
-
+    # x = Flask.json.dumps(result)
+    # return x
+    for row in result:
+        (petID: row[0], petName: row[1], ownerId: row[2],...)
+        print("petName: ", row[1])
+        print("ownerID: ", row[2])
+        print("petBreed: ", row[3])
+        print("petColor: ", row[4])
+        print("checkIn: ", row[5])
+    return 'ok'
 
 ## OWNER
-@app.route('/owner', methods = ['GET'])
+@app.route('/api/owner', methods = ['GET'])
 def getUser():
     cur.execute("SELECT * FROM owner;")
     result = cur.fetchall()
     return "data from owner table is {}".format(result)
 
 
-@app.route('/pet', methods=['POST'])
+@app.route('/api/pet', methods=['POST'])
 def addowner():
     petName = request.form.get('name')
     ownerId = request.form.get('owner_id')
@@ -76,7 +84,7 @@ def addowner():
     return "pet is now {}".format(currentdbstate)
 
 
-@app.route('/pet/checkin/<id>', methods=['PUT'])
+@app.route('/api/pet/checkin/<id>', methods=['PUT'])
 def checkIn(id):
     cur.execute('UPDATE pet SET "checked-in" = CURRENT_TIMESTAMP WHERE "ID" = %s;',
                 (id,))
@@ -106,7 +114,7 @@ def checkIn(id):
 #     return "Deleted {} from pets.".format(index)
 
 
-@app.route('/pet/<id>', methods = ['DELETE'])
+@app.route('/api/pet/<id>', methods = ['DELETE'])
 def deletePet( id ):
     query = 'DELETE FROM pet WHERE "ID" = (%s)'
     id = int(id)
@@ -129,7 +137,7 @@ def deletePet( id ):
 
     # return "data from owner table is {}".format(result)
 
-@app.route('/owner/<ownerName>', methods = ['POST'])
+@app.route('/api/owner/<ownerName>', methods = ['POST'])
 def addOwner( ownerName ):  
     query = 'INSERT INTO owner (name) VALUES (%s)'
     name = str(ownerName)
@@ -137,7 +145,7 @@ def addOwner( ownerName ):
     cur.execute(query, (name,))
     return "ok"
 
-@app.route('/owner/<id>', methods = ['DELETE'])
+@app.route('/api/owner/<id>', methods = ['DELETE'])
 def deleteOwner( id ):
     query = 'DELETE FROM owner WHERE "ID" = (%s)'
     id = int(id)
@@ -145,7 +153,7 @@ def deleteOwner( id ):
     cur.execute(query, (id,))
     return 'ok'
 
-@app.route('/pet/checkout/<id>', methods = ['PUT'])
+@app.route('/api/pet/checkout/<id>', methods = ['PUT'])
 def checkout ( id ):
     query = 'UPDATE pet SET "checked-in" = null WHERE "ID" = (%s)'
     id = int(id)

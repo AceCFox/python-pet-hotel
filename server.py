@@ -1,8 +1,10 @@
 import os
 import sys
 from flask import Flask
-from flask import request, jsonify, render_template
+from flask import request, jsonify, render_template, json
 import psycopg2
+import json
+from psycopg2.extras import RealDictCursor
 
 
 # Create and configure the app
@@ -38,24 +40,45 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/pet', methods=['GET'])
+@app.route('/api/pet', methods=['GET'])
 def getpets():
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     print("in pet get")
-    cur.execute("SELECT * FROM pet;")
+    cur.execute("""
+    SELECT 
+    "pet"."ID" as "id",
+    "pet"."name" as "pets_name" ,
+    "owner"."name" as "owners_name",
+    "breed",
+    "color",
+    "checked-in"
+    FROM "pet"
+    JOIN "owner" 
+    on "owner"."ID" = "pet"."owner_id";""")
     result = cur.fetchall()
-    # (1, 100, "abc'def")
-    return "data from pet table is {}".format(result)
+    cur.close()
+    # indent just makes it look pretty
+    return json.dumps(result, indent =2)
+   
 
 
 ## OWNER
-@app.route('/owner', methods = ['GET'])
+@app.route('/api/owner', methods = ['GET'])
 def getUser():
-    cur.execute("SELECT * FROM owner;")
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+     SELECT owner.name, owner."ID" as "id", COUNT(pet.name) as pet_count 
+     FROM owner JOIN "pet"
+     ON "owner"."ID" = "pet"."owner_id" 
+     GROUP BY owner."ID";""")
     result = cur.fetchall()
-    return "data from owner table is {}".format(result)
+    cur.close()
+    return json.dumps(result, indent =2)
+# SELECT COUNT(column_name)
+# FROM table_name
+# WHERE condition; 
 
-
-@app.route('/pet', methods=['POST'])
+@app.route('/api/pet/', methods=['POST'])
 def addowner():
     petName = request.form.get('name')
     ownerId = request.form.get('owner_id')
@@ -64,7 +87,7 @@ def addowner():
 
     cur.execute("INSERT INTO pet (name, owner_id, breed, color) VALUES (%s, %s, %s, %s);",
                 (str(petName),str(ownerId),str(petBreed),str(petColor)))
-    print("in /pet POST, pet name is :", petName)
+    print("in /pet POST, req.body is :", req.body)
     #beatles.append(beatle)
 
     def refreshdata():
@@ -76,7 +99,7 @@ def addowner():
     return "pet is now {}".format(currentdbstate)
 
 
-@app.route('/pet/checkin/<id>', methods=['PUT'])
+@app.route('/api/pet/checkin/<id>', methods=['PUT'])
 def checkIn(id):
     cur.execute('UPDATE pet SET "checked-in" = CURRENT_TIMESTAMP WHERE "ID" = %s;',
                 (id,))
@@ -106,7 +129,7 @@ def checkIn(id):
 #     return "Deleted {} from pets.".format(index)
 
 
-@app.route('/pet/<id>', methods = ['DELETE'])
+@app.route('/api/pet/<id>', methods = ['DELETE'])
 def deletePet( id ):
     query = 'DELETE FROM pet WHERE "ID" = (%s)'
     id = int(id)
@@ -129,7 +152,7 @@ def deletePet( id ):
 
     # return "data from owner table is {}".format(result)
 
-@app.route('/owner/<ownerName>', methods = ['POST'])
+@app.route('/api/owner/<ownerName>', methods = ['POST'])
 def addOwner( ownerName ):  
     query = 'INSERT INTO owner (name) VALUES (%s)'
     name = str(ownerName)
@@ -137,7 +160,7 @@ def addOwner( ownerName ):
     cur.execute(query, (name,))
     return "ok"
 
-@app.route('/owner/<id>', methods = ['DELETE'])
+@app.route('/api/owner/<id>', methods = ['DELETE'])
 def deleteOwner( id ):
     query = 'DELETE FROM owner WHERE "ID" = (%s)'
     id = int(id)
@@ -145,7 +168,7 @@ def deleteOwner( id ):
     cur.execute(query, (id,))
     return 'ok'
 
-@app.route('/pet/checkout/<id>', methods = ['PUT'])
+@app.route('/api/pet/checkout/<id>', methods = ['PUT'])
 def checkout ( id ):
     query = 'UPDATE pet SET "checked-in" = null WHERE "ID" = (%s)'
     id = int(id)
